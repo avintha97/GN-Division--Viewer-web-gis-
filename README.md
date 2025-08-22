@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NextGIS Dashboard (Next.js + OpenLayers + Turf)
 
-## Getting Started
+A WebGIS dashboard built with Next.js (App Router), OpenLayers for map rendering, and Turf.js for geospatial calculations.
 
-First, run the development server:
+This project includes a client-only OpenLayers map component, a left collapsible sidebar for selecting GN/ADM3 divisions, and Turf-based area/perimeter computations.
 
-```bash
+## Features
+
+- OpenLayers map integrated as a client component (`src/app/components/OpenLayersMap.tsx`).
+- Sidebar with filter + select for GN/ADM3 divisions (`src/app/components/Sidebar.tsx`).
+- Dark themed UI with layered shadows and 3D-like visual accents.
+- Turf.js used to compute geodesic area and perimeter (converted to EPSG:4326 before calculation).
+- Selected-only rendering: large GeoJSONs are kept in memory but only the selected geometry is rendered on the map for performance.
+- Default dark basemap: Carto Dark Matter (configurable in `OpenLayersMap.tsx`).
+
+## Project layout
+
+- `src/app/page.tsx` — app layout and composition.
+- `src/app/components/OpenLayersMap.tsx` — map initialization, layers, selection, Turf calculations.
+- `src/app/components/Sidebar.tsx` — filters, selection dropdown, attribute cards.
+- `src/app/components/Navbar.tsx` — top navigation bar.
+- `public/` — put GeoJSON data files here (ignored by `.gitignore` by default).
+
+## GeoJSON data
+
+Place GeoJSON files in the `public/` folder (for example `public/sri_lanka.geojson`).
+
+Note: this repo's `.gitignore` is configured to ignore `*.geojson` and `public/*.geojson` so large data files aren't committed accidentally. Remove those lines from `.gitignore` if you want to track a GeoJSON file in Git.
+
+## Setup (Windows PowerShell)
+
+Open PowerShell in the project folder (`d:\Data\Projects\Programming\Web\Next-GIS\mapbox-nextjs`) and run:
+
+```powershell
+# install dependencies
+cd "d:\Data\Projects\Programming\Web\Next-GIS\mapbox-nextjs"
+npm install
+
+# start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+If `npm run dev` fails, inspect the terminal output for missing packages or TypeScript errors. Running `npm install` in the project root usually fixes missing dependencies.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Notes for developers
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Map code runs on the client only. The map component is dynamically imported with `ssr: false`.
+- GeoJSON features are read with `ol/format/GeoJSON` and reprojected to `EPSG:3857` for display. For Turf calculations features are converted to `EPSG:4326` GeoJSON before running `turf.area` and `turf.length`.
+- The sidebar filters and deduplicates division labels to avoid showing empty/unknown entries.
+- Base layers are configured in `OpenLayersMap.tsx` (Carto, Stadia, OSM). Change `baseLayer` state or `baseLayers` to switch providers.
+- A canvas `prerender/postrender` (and compatibility with `precompose/postcompose`) handler is attached to the tile layer to optionally apply a CSS canvas `filter` during tile draw. Remove it to use raw tiles.
 
-## Learn More
+## Common troubleshooting
 
-To learn more about Next.js, take a look at the following resources:
+- Blank map: ensure `public/sri_lanka.geojson` exists and is reachable via `fetch('/sri_lanka.geojson')`.
+- Overflowing layout: avoid nested `100vh` elements; use flex with `minHeight: 0` as used in the app layout.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contributing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+If you plan to add features, consider:
 
-## Deploy on Vercel
+- Moving inline styles to CSS modules or Tailwind for maintainability.
+- Adding unit tests for the conversion and Turf calculations.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License & attribution
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Tile providers used (Carto, Stadia, OSM) require proper attribution in production. Stamen tiles are CC0; check each provider's terms.
+
+---
+
+If you want, I can also:
+
+- Add a `CONTRIBUTING.md` and `DEVELOPMENT.md` for local setup and debugging steps.
+- Run the dev server and report any startup errors.
+- Convert inline styles to CSS modules.

@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# GeoJSON and large data files (ignored per request)
+*.geojson
+public/*.geojson
+
+# IDE
+.vscode/
+.idea/
